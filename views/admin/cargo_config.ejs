@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Configurar Cargo</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* --- ESTILOS DEL DASHBOARD (COPIADOS) --- */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 30px;
+            background-color: #f8fafc;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DE CONFIGURACIÓN --- */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comp-card {
+            background: white;
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .comp-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .comp-card.active {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+
+        .input-qty {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-grid">
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+
+                <li><a href="/admin/cargos" class="active">💼 Gestión Cargos</a></li>
+
+                <li><a href="/admin/tipos">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div style="max-width: 1000px; margin: 0 auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <a href="/admin/cargos" style="color:#64748b; text-decoration: none;">← Volver a Cargos</a>
+                        <h1 style="margin-top: 10px;">⚙️ Configurar Examen</h1>
+                        <h3>Cargo: <span style="color:#2563eb">
+                                <%= cargo.nombre %>
+                            </span></h3>
+                    </div>
+                    <button form="formConfig" type="submit" class="btn-primary"
+                        style="padding:12px 25px; font-size:16px; background-color: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        💾 Guardar Cambios
+                    </button>
+                </div>
+
+                <p class="info-box"
+                    style="background:#fff7ed; padding:15px; border-left:4px solid #f97316; margin:20px 0; border-radius: 4px;">
+                    Define <b>cuántas preguntas aleatorias</b> se seleccionarán de cada competencia para este cargo.
+                    <br>Si pones <b>0</b>, esa competencia no aparecerá en el examen.
+                </p>
+
+                <form id="formConfig" action="/admin/cargos/configurar/<%= cargo.id_cargo %>" method="POST">
+                    <div class="config-grid">
+                        <% competencias.forEach(comp=> {
+                            const cant = configMap[comp.id_competencia] || 0;
+                            %>
+                            <div class="comp-card <%= cant > 0 ? 'active' : '' %>" id="card-<%= comp.id_competencia %>">
+                                <div style="font-weight:bold; margin-bottom:5px;">
+                                    <%= comp.nombre %>
+                                </div>
+
+                                <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
+                                    <label style="font-size:13px;">Preguntas:</label>
+                                    <input type="number" name="competencias[comp_<%= comp.id_competencia %>]"
+                                        value="<%= cant %>" min="0" class="input-qty"
+                                        onchange="updateCard(this, <%= comp.id_competencia %>)">
+                                </div>
+                            </div>
+                            <% }) %>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function updateCard(input, id) {
+            const card = document.getElementById('card-' + id);
+            if (input.value > 0) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+
+</html>

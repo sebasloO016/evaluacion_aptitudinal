@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Opciones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS (Mismos que tenías) --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .card-edit {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .input-std {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .input-std:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .badge-number {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #475569;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+            border-radius: 50%;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        .btn-save {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-cancel {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-cancel:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid">
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %> Hola, <%= user.nombres %>
+                        <% } else { %> Administrador <% } %>
+            </div>
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+                <li><a href="/admin/cargos">💼 Gestión Cargos</a></li>
+                <li><a href="/admin/tipos" class="active">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">Cerrar
+                            Sesión</button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="card-edit">
+                <div class="header-flex">
+                    <div>
+                        <h2 style="margin:0; color:#1e293b;">✏️ Editar Textos</h2>
+                        <span style="color:#2563eb; font-weight:600; font-size:14px;">
+                            <%= tipo.nombre %>
+                        </span>
+                    </div>
+                    <a href="/admin/tipos" class="btn-cancel">✕ Cancelar</a>
+                </div>
+
+                <form action="/admin/tipos/editar/<%= tipo.id_tipo_pregunta %>" method="POST">
+
+                    <% for(let i=1; i<=5; i++) { let valor="" ; /* Lógica para encontrar el valor existente en la BD */
+                        if (typeof opciones !=='undefined' && opciones.length> 0) {
+                        let encontrado = opciones.find(function(o) { return o.opcion_num == i; });
+                        if(encontrado) {
+                        valor = encontrado.texto;
+                        }
+                        }
+                        %>
+
+                        <div class="input-group">
+                            <label>
+                                <span class="badge-number">
+                                    <%= i %>
+                                </span>
+                                Opción <%= i %>
+                            </label>
+
+                            <input type="text" name="texto_<%= i %>" value="<%= valor %>" class="input-std"
+                                placeholder="Escriba el texto aquí (ej: Nunca)" required>
+                        </div>
+
+                        <% } %>
+
+                            <button type="submit" class="btn-save">💾 Guardar Cambios</button>
+                </form>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

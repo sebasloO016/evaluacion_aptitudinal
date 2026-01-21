@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Reportes de Resultados</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES Y SIDEBAR (Igual que antes) --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+        }
+
+        /* --- ESTILOS DE REPORTES --- */
+        .filters-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .form-control {
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        .btn-search {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 11px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            height: 42px;
+        }
+
+        .btn-search:hover {
+            background-color: #2563eb;
+        }
+
+        /* Tabla */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.80rem;
+            text-transform: uppercase;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .status-enviado {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-progreso {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-pendiente {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+
+        .btn-excel {
+            background-color: #10b981;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            border: none;
+        }
+
+        /* --- ESTILOS PAGINACIÓN (NUEVO) --- */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .pagination-info {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-page {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #334155;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .btn-page:hover:not(.disabled) {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .btn-page.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .btn-page.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-grid">
+
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+                <li><a href="/admin/cargos">💼 Gestión Cargos</a></li>
+                <li><a href="/admin/tipos">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes" class="active">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">Cerrar
+                            Sesión</button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div style="max-width: 1400px; margin: 0 auto;">
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap:20px;">
+                    <div>
+                        <h1 style="margin:0; color:#1e293b;">📈 Resultados de Evaluaciones</h1>
+                        <p style="margin:5px 0 0 0; color:#64748b;">Monitorea el progreso, visualiza puntajes y exporta
+                            reportes detallados.</p>
+                    </div>
+
+                    <a href="/admin/reportes/exportar?cargo=<%= filtros.cargo %>&estado=<%= filtros.estado %>&busqueda=<%= filtros.busqueda %>"
+                        class="btn-excel">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        Descargar Excel Filtrado (Todo)
+                    </a>
+                </div>
+
+                <form class="filters-bar" method="GET" action="/admin/reportes">
+                    <input type="hidden" name="page" value="1">
+
+                    <div class="filter-group" style="flex: 2;">
+                        <label>🔍 Buscar Postulante</label>
+                        <input type="text" name="busqueda" class="form-control"
+                            placeholder="Cédula, Nombre o Apellido..." value="<%= filtros.busqueda %>">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>💼 Cargo</label>
+                        <select name="cargo" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Todos --</option>
+                            <% cargos.forEach(c=> { %>
+                                <option value="<%= c.id_cargo %>" <%=filtros.cargo==c.id_cargo ? 'selected' : '' %>><%=
+                                        c.nombre %>
+                                </option>
+                                <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>📌 Estado</label>
+                        <select name="estado" class="form-control" onchange="this.form.submit()">
+                            <option value="">-- Todos --</option>
+                            <option value="ENVIADO" <%=filtros.estado=='ENVIADO' ? 'selected' : '' %>>Finalizados
+                            </option>
+                            <option value="EN_PROGRESO" <%=filtros.estado=='EN_PROGRESO' ? 'selected' : '' %>>En
+                                Progreso</option>
+                            <option value="PENDIENTE" <%=filtros.estado=='PENDIENTE' ? 'selected' : '' %>>Pendientes
+                            </option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-search">Buscar</button>
+
+                    <% if(filtros.cargo || filtros.estado || filtros.busqueda) { %>
+                        <a href="/admin/reportes"
+                            style="color: #ef4444; text-decoration: none; font-size: 14px; padding: 0 10px; height: 42px; display: flex; align-items: center; font-weight: 500;">✕
+                            Limpiar</a>
+                        <% } %>
+                </form>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th width="15%">Cédula</th>
+                                <th width="25%">Postulante</th>
+                                <th width="20%">Cargo</th>
+                                <th width="15%">Estado</th>
+                                <th width="10%">Nota</th>
+                                <th width="15%">Fecha Envío</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if(resultados.length===0) { %>
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding: 50px; color: #94a3b8;">
+                                        <div style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;">📭</div>
+                                        <div style="font-size: 1.1rem; font-weight: 500;">No se encontraron registros
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% } %>
+
+                                    <% resultados.forEach(row=> { %>
+                                        <tr>
+                                            <td style="font-family: monospace; font-size: 0.9rem; color: #64748b;">
+                                                <%= row.cedula %>
+                                            </td>
+                                            <td style="font-weight: 600; color:#334155;">
+                                                <%= row.nombre_completo %>
+                                            </td>
+                                            <td style="color:#475569;">
+                                                <%= row.cargo %>
+                                            </td>
+                                            <td>
+                                                <% if (row.estado==='ENVIADO' ) { %>
+                                                    <span class="status-badge status-enviado">FINALIZADO</span>
+                                                    <% } else if (row.estado==='EN_PROGRESO' ) { %>
+                                                        <span class="status-badge status-progreso">EN CURSO</span>
+                                                        <% } else { %>
+                                                            <span class="status-badge status-pendiente">PENDIENTE</span>
+                                                            <% } %>
+                                            </td>
+                                            <td>
+                                                <% if(row.puntaje_final !==null) { %>
+                                                    <span style="font-weight: bold; color: #0f172a; font-size: 1.1rem;">
+                                                        <%= row.puntaje_final %>
+                                                    </span>
+                                                    <span style="font-size:0.75em; color:#94a3b8;">/ <%=
+                                                            row.puntaje_maximo %></span>
+                                                    <% } else { %>
+                                                        <span style="color:#cbd5e1;">-</span>
+                                                        <% } %>
+                                            </td>
+                                            <td style="font-size: 0.85rem; color: #64748b;">
+                                                <%= row.enviado_en ? new Date(row.enviado_en).toLocaleString('es-EC')
+                                                    : '-' %>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                        </tbody>
+                    </table>
+
+                    <% if (pagination.totalItems> 0) { %>
+                        <div style="padding: 20px;">
+                            <div class="pagination-container">
+                                <div class="pagination-info">
+                                    Mostrando página <b>
+                                        <%= pagination.page %>
+                                    </b> de <b>
+                                        <%= pagination.totalPages %>
+                                    </b>
+                                    (Total: <%= pagination.totalItems %> registros)
+                                </div>
+
+                                <div class="pagination-controls">
+                                    <a href="/admin/reportes?page=<%= pagination.page - 1 %>&cargo=<%= filtros.cargo %>&estado=<%= filtros.estado %>&busqueda=<%= filtros.busqueda %>"
+                                        class="btn-page <%= !pagination.hasPrev ? 'disabled' : '' %>">
+                                        ← Anterior
+                                    </a>
+
+                                    <a href="/admin/reportes?page=<%= pagination.page + 1 %>&cargo=<%= filtros.cargo %>&estado=<%= filtros.estado %>&busqueda=<%= filtros.busqueda %>"
+                                        class="btn-page <%= !pagination.hasNext ? 'disabled' : '' %>">
+                                        Siguiente →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+
+                </div>
+
+            </div>
+        </main>
+    </div>
+    <div id="copyright-protection-layer"
+        style="position:fixed;bottom:0;left:0;width:100%;padding:12px 20px;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;background-color:#f1f5f9;text-align:center;z-index:9999;">
+    </div>
+
+</body>
+<script src="/js/system-core-validator.js"></script>
+
+</html>

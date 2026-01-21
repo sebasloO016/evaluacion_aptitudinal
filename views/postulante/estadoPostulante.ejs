@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Estado del Examen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #1e293b;
+        }
+
+        .welcome-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            background: #dbeafe;
+            color: #2563eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 20px;
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+
+        .user-role {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .status-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Botones */
+        .btn-action {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-logout {
+            background: white;
+            color: #ef4444;
+            border: 1px solid #fee2e2;
+            margin-top: 15px;
+        }
+
+        .btn-logout:hover {
+            background: #fef2f2;
+        }
+
+        /* Puntuación */
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 8px solid #0ea5e9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="welcome-card">
+
+        <div class="avatar-circle">
+            <%= usuario.nombres.charAt(0) %>
+                <%= usuario.apellidos.charAt(0) %>
+        </div>
+
+        <div class="user-name">Hola, <%= usuario.nombres.split(' ')[0] %></div>
+        <div class="user-role">Postulante a: <b><%= cargo.nombre %></b></div>
+
+        <div class="status-box">
+            <div class="status-label">Estado Actual</div>
+            
+            <% if (estadoUI === "ESPERA") { %>
+                <div class="status-value" style="color: #f59e0b;">⏳ En Espera</div>
+                <p style="font-size: 0.9rem; margin-top: 5px; color: #64748b;">
+                    El administrador aún no habilita el examen para este cargo.
+                </p>
+            <% } else if (estadoUI === "FINALIZADO") { %>
+                <div class="status-value" style="color: #10b981;">✅ Finalizado</div>
+            <% } else if (estadoUI === "REANUDAR") { %>
+                <div class="status-value" style="color: #3b82f6;">⏸️ Pausado</div>
+            <% } else { %>
+                <div class="status-value" style="color: #3b82f6;">🚀 Listo para iniciar</div>
+            <% } %>
+        </div>
+
+        <% if (estadoUI === "FINALIZADO") { %>
+            <div class="score-circle">
+                <span style="font-size: 2.5rem; font-weight: 800; color: #0f172a; line-height: 1;">
+                    <%= puntaje !== null ? puntaje : ' --' %>
+                </span>
+                <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">PUNTOS</span>
+        </div>
+        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
+            Gracias por completar la evaluación. Tus resultados han sido registrados.
+        </p>
+        <% } %>
+
+            <% if (estadoUI==="INICIAR" ) { %>
+                <a href="/postulante/examen" class="btn-action btn-start">
+                    Comenzar Examen
+                </a>
+                <% } %>
+
+                    <% if (estadoUI==="REANUDAR" ) { %>
+                        <a href="/postulante/examen" class="btn-action btn-start">
+                            Reanudar Evaluación
+                        </a>
+                        <% } %>
+
+                            <form action="/logout" method="POST">
+                                <button class="btn-action btn-logout" type="submit">Cerrar Sesión</button>
+                            </form>
+
+    </div>
+
+</body>
+
+</html>

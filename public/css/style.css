@@ -1,0 +1,162 @@
+:root {
+    --primary: #2563eb;
+    /* Azul corporativo */
+    --primary-dark: #1e40af;
+    --secondary: #64748b;
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --danger: #ef4444;
+    --success: #10b981;
+    --border: #e2e8f0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: #334155;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Layout & Containers */
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.main-content {
+    background-color: var(--bg-light);
+    min-height: 100vh;
+}
+
+.card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+    color: #1e293b;
+    margin-top: 0;
+}
+
+.muted {
+    color: var(--secondary);
+    font-size: 0.9em;
+}
+
+/* Links & Buttons */
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button,
+.btn,
+.btn-primary {
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    transition: background 0.2s;
+    text-decoration: none;
+}
+
+button:hover,
+.btn:hover {
+    background-color: var(--primary-dark);
+}
+
+button.danger {
+    background-color: var(--danger);
+}
+
+button.danger:hover {
+    background-color: #dc2626;
+}
+
+/* Alerts */
+.alert {
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.alert.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Forms */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+/* Examen Específico */
+.qbox {
+    background: var(--white);
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.qbox:hover {
+    border-color: #cbd5e1;
+}
+
+.opcion {
+    display: block;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 8px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.opcion:hover {
+    background-color: #f1f5f9;
+}
+
+.opcion.seleccionada {
+    background-color: #eff6ff;
+    border-color: var(--primary);
+    color: var(--primary-dark);
+}
+
+input[type="radio"] {
+    margin-right: 10px;
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Parametrización Global</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES Y SIDEBAR --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DE PARAMETROS --- */
+        .config-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 550px;
+            /* Ancho máximo para que no se vea estirado */
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .help-text {
+            display: block;
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .btn-save {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid">
+
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+                <li><a href="/admin/cargos">💼 Gestión Cargos</a></li>
+                <li><a href="/admin/tipos">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+
+                <li><a href="/admin/parametros" class="active">⚙️ Config. Global</a></li>
+
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="config-card">
+                <h1 style="margin-top:0; color:#1e293b; text-align: center;">⚙️ Configuración Global</h1>
+                <p style="text-align: center; color: #64748b; margin-bottom: 30px;">Ajusta los parámetros generales del
+                    sistema.</p>
+
+                <% if(locals.success_msg && success_msg.length> 0) { %>
+                    <div class="alert success"
+                        style="background:#dcfce7; color:#166534; padding:15px; border-radius:6px; margin-bottom:20px;">
+                        <%= success_msg %>
+                    </div>
+                    <% } %>
+
+                        <form action="/admin/parametros" method="POST">
+
+                            <div class="form-group">
+                                <label>🏆 Puntaje Máximo del Examen</label>
+                                <input type="number" name="puntaje_maximo" value="<%= params.puntaje_maximo %>" required
+                                    class="form-input" placeholder="Ej: 100">
+                                <small class="help-text">
+                                    Valor sobre el cual se calculará la nota final (Regla de 3).<br>
+                                    Ej: Si pones 100, la nota final será sobre 100 puntos.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>⏱️ Tiempo de Inactividad (Minutos)</label>
+                                <input type="number" name="timeout_inactividad_min"
+                                    value="<%= params.timeout_inactividad_min %>" required class="form-input"
+                                    placeholder="Ej: 30">
+                                <small class="help-text">
+                                    Tiempo máximo que un usuario puede estar sin actividad antes de cerrar su sesión
+                                    automáticamente.
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn-save">💾 Guardar Cambios</button>
+                        </form>
+            </div>
+
+        </main>
+    </div>
+</body>
+
+</html>

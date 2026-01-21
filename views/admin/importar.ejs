@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Importar Datos - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES Y SIDEBAR --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+        }
+
+        /* --- ESTILOS DE IMPORTACIÓN --- */
+        .import-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .card-import {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card-import:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ZONA DE ARRASTRE (DRAG & DROP) */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+            background-color: #f8fafc;
+            position: relative;
+        }
+
+        .drop-zone:hover {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .drop-zone.dragover {
+            background-color: #eff6ff;
+            border-color: #2563eb;
+            transform: scale(1.02);
+        }
+
+        .drop-icon {
+            font-size: 40px;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .drop-text {
+            color: #475569;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-name-display {
+            display: none;
+            margin-top: 10px;
+            padding: 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* HINT Y BOTONES */
+        .format-hint {
+            font-size: 13px;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            line-height: 1.6;
+        }
+
+        .btn-upload {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .btn-upload:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-green {
+            background-color: #10b981;
+        }
+
+        .btn-green:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid">
+
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar" class="active">📥 Carga Masiva (Excel)</a></li>
+                <li><a href="/admin/cargos">💼 Gestión Cargos</a></li>
+                <li><a href="/admin/tipos">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <h1 style="color:#1e293b; margin-top:0;">📥 Carga Masiva de Datos</h1>
+            <p style="color:#64748b;">Selecciona el tipo de carga que deseas realizar arrastrando el archivo
+                correspondiente.</p>
+
+            <% if(locals.success_msg && success_msg.length> 0) { %>
+                <div class="alert success"
+                    style="background:#dcfce7; color:#166534; padding:15px; border-radius:6px; margin-bottom:20px;">
+                    <%= success_msg %>
+                </div>
+                <% } %>
+                    <% if(locals.error_msg && error_msg.length> 0) { %>
+                        <div class="alert error"
+                            style="background:#fee2e2; color:#991b1b; padding:15px; border-radius:6px; margin-bottom:20px;">
+                            <%= error_msg %>
+                        </div>
+                        <% } %>
+
+                            <div class="import-container">
+
+                                <div class="card-import">
+                                    <h2 style="color:#1e293b; margin-top:0;">👤 Importar Postulantes</h2>
+                                    <p style="font-size:14px; color:#64748b;">Base de datos de candidatos con sus
+                                        cargos.</p>
+
+                                    <form action="/admin/importar/usuarios" method="POST" enctype="multipart/form-data"
+                                        id="form-usuarios">
+
+                                        <div class="drop-zone" id="drop-zone-user">
+                                            <span class="drop-icon">📂</span>
+                                            <span class="drop-text">Arrastra el Excel aquí<br>o haz clic para
+                                                buscar</span>
+                                            <input type="file" name="archivoExcel" accept=".xlsx" id="file-user" hidden
+                                                required>
+                                            <div class="file-name-display" id="name-user"></div>
+                                        </div>
+
+                                        <button type="submit" class="btn-upload">Subir Usuarios</button>
+                                    </form>
+
+                                    <div class="format-hint">
+                                        <b>Columnas requeridas:</b><br>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">cedula</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">nombres</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">apellidos</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">cargo</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">email</code>
+                                        <br><br>
+                                        <ul style="margin:0; padding-left:20px;">
+                                            <li>Si el cargo no existe, se crea solo.</li>
+                                            <li>La contraseña será la cédula.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="card-import">
+                                    <h2 style="color:#1e293b; margin-top:0;">❓ Importar Preguntas</h2>
+                                    <p style="font-size:14px; color:#64748b;">Banco de preguntas, tipos y valores.</p>
+
+                                    <form action="/admin/importar/preguntas" method="POST" enctype="multipart/form-data"
+                                        id="form-preguntas">
+
+                                        <div class="drop-zone" id="drop-zone-quest">
+                                            <span class="drop-icon">📝</span>
+                                            <span class="drop-text">Arrastra el Excel aquí<br>o haz clic para
+                                                buscar</span>
+                                            <input type="file" name="archivoExcel" accept=".xlsx" id="file-quest" hidden
+                                                required>
+                                            <div class="file-name-display" id="name-quest"></div>
+                                        </div>
+
+                                        <button type="submit" class="btn-upload btn-green">Subir Preguntas</button>
+                                    </form>
+
+                                    <div class="format-hint">
+                                        <b>Columnas requeridas:</b><br>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">competencia</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">tipo</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">pregunta</code>
+                                        <code
+                                            style="background:#e2e8f0; padding:2px 4px; border-radius:4px;">val1..val5</code>
+                                        <br><br>
+                                        <ul style="margin:0; padding-left:20px;">
+                                            <li><b>Tipo:</b> Cognitivo, Situacional, Frecuencia.</li>
+                                            <li><b>Valores:</b> Decimales (ej: 0.25).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                            </div>
+        </main>
+    </div>
+
+    <script>
+        function setupDropZone(dropZoneId, fileInputId, nameDisplayId) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(fileInputId);
+            const nameDisplay = document.getElementById(nameDisplayId);
+
+            // Click para abrir selector
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            // Cambio en el input (cuando seleccionan manualmente)
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length > 0) {
+                    showFile(fileInput.files[0], nameDisplay);
+                }
+            });
+
+            // Drag Over (Arrastrando encima)
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            // Drag Leave (Saliendo del área)
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            // Drop (Soltar archivo)
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files; // Asignar archivo al input
+                    showFile(e.dataTransfer.files[0], nameDisplay);
+                }
+            });
+        }
+
+        function showFile(file, displayElement) {
+            displayElement.style.display = 'block';
+            displayElement.innerText = "📄 Archivo listo: " + file.name;
+        }
+
+        // Inicializar las dos zonas
+        setupDropZone('drop-zone-user', 'file-user', 'name-user');
+        setupDropZone('drop-zone-quest', 'file-quest', 'name-quest');
+    </script>
+</body>
+
+</html>

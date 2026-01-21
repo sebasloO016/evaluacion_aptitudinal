@@ -1,0 +1,394 @@
+evaluacion_aptitudinal/
+│
+├── public/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── examen.js //no aun implementado
+│   │   ├── antiCopy.js //no aun implementado
+│   │   └── adminImport.js //no aun implementado
+│   ├── img/
+│   │   └── logo.png
+│   └── uploads/
+│       └── (archivos excel temporales)
+│
+├── views/
+│   ├── partials/
+│   │   ├── head.ejs       //no aun implementado
+│   │   ├── sidebarAdmin.ejs  //no aun implementado
+│   │   ├── navbar.ejs   //no aun implementado
+│   │   └── footer.ejs   //no aun implementado
+│   │
+│   ├── auth/
+│   │   └── login.ejs
+│   │
+│   ├── admin/
+│   │   ├── dashboard.ejs
+│   │   ├── importar.ejs 
+│   │   ├── cargos.ejs
+│   │   ├── parametros.ejs
+│   │   └── reportes.ejs
+│   │
+│   ├── postulante/
+│   │   ├── espera.ejs
+│   │   ├── examen.ejs
+│   │   └── finalizado.ejs
+│   │
+│   ├── 404.ejs
+│   └── index.ejs
+│
+├── src/
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── adminController.js
+│   │   └── postulanteController.js
+│   │
+│   ├── db/
+│   │   └── db.js
+│   │
+│   ├── models/
+│   │   ├── UsuarioModel.js
+│   │   ├── AdminModel.js
+│   │   └── ExamenModel.js
+│   │
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── adminRoutes.js
+│   │   └── postulanteRoutes.js
+│   │
+│   └── app.js
+│
+├── db_schema.sql
+├── package.json
+└── .env
+
+
+evaluacion_aptitudinal/
+│
+├── public/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   ├── examen.js //no aun implementado
+│   │   ├── antiCopy.js //no aun implementado
+│   │   └── adminImport.js //no aun implementado
+│   ├── img/
+│   │   └── logo.png
+│   └── uploads/
+│       └── (archivos excel temporales)
+│
+├── views/
+│   ├── partials/
+│   │   ├── //no implemenar partials aun
+│   │   ├── 
+│   │   ├── 
+│   │   └── 
+│   │
+│   ├── auth/
+│   │   └── login.ejs
+│   │
+│   ├── admin/
+│   │   ├── dashboard.ejs
+│   │   ├── importar.ejs //no aun implementado
+│   │   ├── cargos.ejs //no aun implementado
+│   │   ├── parametros.ejs //no aun implementado
+│   │   └── reportes.ejs //no aun implementado
+│   │
+│   ├── postulante/
+│   │   ├── estadoPostulante.ejs
+│   │   ├── examenPostulante.ejs
+│   │   └── // supongo faltan mas
+│   │
+│   ├── 404.ejs
+│   └── index.ejs
+│
+├── src/
+│   ├── controllers/
+│   │   ├── authMiddleware.js
+│   │   ├── EstadoPostulanteController.js
+│   │   ├── ExamenPostulanteController.js
+│   │   └── // AUN NO IMPLEMENTADO controllers PARA POSTULANTES
+│   │
+│   ├── db/
+│   │   └── db.js
+│   │
+│   ├── models/
+│   │   ├── UsuarioModel.js
+│   │   ├── EstadoPostulanteModel.js
+│   │   └── ExamenPostulanteModel.js
+│   │
+│   ├── routes/
+│   │   ├── authMiddleware.js
+│   │   ├── adminRoutes.js
+│   │   ├── postulanteRoutes.js
+│   │   └── authRoutes.js
+│   │
+│   └── app.js
+│
+├── db_schema.sql
+├── package.json
+└── .env
+
+
+
+-- ============================================================
+--  BASE DE DATOS: Sistema de Evaluación Aptitudinal
+--  Tech: MySQL + InnoDB + utf8mb4
+--  Nomenclatura: ID Global (id_tabla)
+-- ============================================================
+
+DROP DATABASE IF EXISTS examenes_aptitudinales;
+CREATE DATABASE examenes_aptitudinales
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE examenes_aptitudinales;
+
+-- ============================================================
+--  1) ROLES (admin / postulante)
+-- ============================================================
+CREATE TABLE roles (
+  id_rol INT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  nombre VARCHAR(30) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+INSERT INTO roles (nombre) VALUES ('admin'), ('postulante');
+
+-- ============================================================
+--  2) CARGOS
+-- ============================================================
+CREATE TABLE cargos (
+  id_cargo INT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  nombre VARCHAR(120) NOT NULL UNIQUE,
+  activo_para_examen TINYINT(1) NOT NULL DEFAULT 0,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============================================================
+--  3) COMPETENCIAS
+-- ============================================================
+CREATE TABLE competencias (
+  id_competencia INT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  nombre VARCHAR(120) NOT NULL UNIQUE,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ============================================================
+--  4) RELACION: CARGO <-> COMPETENCIA
+-- ============================================================
+CREATE TABLE cargos_competencias (
+  id_cargo INT NOT NULL,       -- ANTES: cargo_id
+  id_competencia INT NOT NULL, -- ANTES: competencia_id
+  cantidad_preguntas INT NOT NULL,
+  PRIMARY KEY (id_cargo, id_competencia),
+  CONSTRAINT fk_cc_cargo
+    FOREIGN KEY (id_cargo) REFERENCES cargos(id_cargo)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_cc_competencia
+    FOREIGN KEY (id_competencia) REFERENCES competencias(id_competencia)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================================
+--  5) TIPOS DE PREGUNTA
+-- ============================================================
+CREATE TABLE tipos_pregunta (
+  id_tipo_pregunta INT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  nombre VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+INSERT INTO tipos_pregunta (nombre)
+VALUES ('Cognitivo'), ('Situacional'), ('Frecuencia');
+
+-- ============================================================
+--  6) OPCIONES FIJAS POR TIPO
+-- ============================================================
+CREATE TABLE tipo_opciones (
+  id_tipo_opcion BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_tipo_pregunta INT NOT NULL, -- ANTES: tipo_pregunta_id
+  opcion_num TINYINT NOT NULL,
+  texto VARCHAR(255) NOT NULL,
+  UNIQUE(id_tipo_pregunta, opcion_num),
+  CONSTRAINT fk_tipo_opciones_tipo
+    FOREIGN KEY (id_tipo_pregunta) REFERENCES tipos_pregunta(id_tipo_pregunta)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================================
+--  7) USUARIOS
+-- ============================================================
+CREATE TABLE usuarios (
+  id_usuario BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  cedula VARCHAR(20) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  nombres VARCHAR(120) NOT NULL,
+  apellidos VARCHAR(120) NOT NULL,
+  email VARCHAR(150) NULL,
+  id_rol INT NOT NULL,   -- ANTES: rol_id
+  id_cargo INT NULL,     -- ANTES: cargo_id
+  examen_finalizado TINYINT(1) NOT NULL DEFAULT 0,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_usuario_rol
+    FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_usuario_cargo
+    FOREIGN KEY (id_cargo) REFERENCES cargos(id_cargo)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_usuarios_cargo ON usuarios(id_cargo);
+
+-- ============================================================
+--  8) PARAMETROS GLOBALES
+-- ============================================================
+CREATE TABLE parametros_globales (
+  id_parametro_global INT PRIMARY KEY, -- ANTES: id
+  puntaje_maximo INT NOT NULL DEFAULT 100,
+  timeout_inactividad_min INT NOT NULL DEFAULT 30,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT INTO parametros_globales (id_parametro_global, puntaje_maximo, timeout_inactividad_min)
+VALUES (1, 100, 30)
+ON DUPLICATE KEY UPDATE
+  puntaje_maximo = VALUES(puntaje_maximo),
+  timeout_inactividad_min = VALUES(timeout_inactividad_min);
+
+-- ============================================================
+--  9) PREGUNTAS
+-- ============================================================
+CREATE TABLE preguntas (
+  id_pregunta BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_competencia INT NOT NULL,    -- ANTES: competencia_id
+  id_tipo_pregunta INT NOT NULL,  -- ANTES: tipo_pregunta_id
+  texto TEXT NOT NULL,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_preguntas_competencia
+    FOREIGN KEY (id_competencia) REFERENCES competencias(id_competencia)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_preguntas_tipo
+    FOREIGN KEY (id_tipo_pregunta) REFERENCES tipos_pregunta(id_tipo_pregunta)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_preguntas_competencia ON preguntas(id_competencia);
+CREATE INDEX idx_preguntas_tipo ON preguntas(id_tipo_pregunta);
+
+-- ============================================================
+--  10) PORCENTAJES POR PREGUNTA
+-- ============================================================
+CREATE TABLE pregunta_tipo_valores (
+  id_pregunta_tipo_valor BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_pregunta BIGINT NOT NULL, -- ANTES: pregunta_id
+  opcion_num TINYINT NOT NULL,
+  porcentaje DECIMAL(6,4) NOT NULL,
+  UNIQUE (id_pregunta, opcion_num),
+  CONSTRAINT fk_ptv_pregunta
+    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_ptv_pregunta ON pregunta_tipo_valores(id_pregunta);
+
+-- ============================================================
+--  11) INTENTOS DE EXAMEN
+-- ============================================================
+CREATE TABLE intentos_examen (
+  id_intento_examen BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_usuario BIGINT NOT NULL, -- ANTES: usuario_id
+  id_cargo INT NOT NULL,      -- ANTES: cargo_id
+  estado ENUM('EN_PROGRESO','ENVIADO','EXPIRADO') NOT NULL DEFAULT 'EN_PROGRESO',
+  iniciado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  ultima_actividad_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  enviado_en DATETIME NULL,
+  ip_inicio VARCHAR(45) NULL,
+  user_agent_inicio VARCHAR(255) NULL,
+  CONSTRAINT fk_intento_usuario
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_intento_cargo
+    FOREIGN KEY (id_cargo) REFERENCES cargos(id_cargo)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- Un usuario solo puede tener 1 intento EN_PROGRESO
+CREATE UNIQUE INDEX uq_intento_usuario_en_progreso
+  ON intentos_examen(id_usuario, estado);
+
+CREATE INDEX idx_intentos_actividad ON intentos_examen(ultima_actividad_en);
+
+-- ============================================================
+--  12) MEJORA: referencia circular en usuarios
+-- ============================================================
+ALTER TABLE usuarios
+ADD COLUMN id_intento_examen BIGINT NULL AFTER examen_finalizado; -- ANTES: intento_activo_id
+
+ALTER TABLE usuarios
+ADD CONSTRAINT fk_usuario_intento_activo
+FOREIGN KEY (id_intento_examen) REFERENCES intentos_examen(id_intento_examen)
+ON DELETE SET NULL ON UPDATE CASCADE;
+
+CREATE INDEX idx_usuario_intento_activo ON usuarios(id_intento_examen);
+
+-- ============================================================
+--  13) PREGUNTAS CONGELADAS DEL INTENTO
+-- ============================================================
+CREATE TABLE intento_preguntas (
+  id_intento_pregunta BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_intento_examen BIGINT NOT NULL, -- ANTES: intento_id
+  id_competencia INT NOT NULL,       -- ANTES: competencia_id
+  id_pregunta BIGINT NOT NULL,       -- ANTES: pregunta_id
+  orden INT NOT NULL,
+  UNIQUE (id_intento_examen, id_pregunta),
+  UNIQUE (id_intento_examen, orden),
+  CONSTRAINT fk_ip_intento
+    FOREIGN KEY (id_intento_examen) REFERENCES intentos_examen(id_intento_examen)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_ip_competencia
+    FOREIGN KEY (id_competencia) REFERENCES competencias(id_competencia)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_ip_pregunta
+    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_ip_intento ON intento_preguntas(id_intento_examen);
+
+-- ============================================================
+--  14) RESPUESTAS DEL POSTULANTE
+-- ============================================================
+CREATE TABLE resultados_detalle (
+  id_resultado_detalle BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_intento_examen BIGINT NOT NULL, -- ANTES: intento_id
+  id_pregunta BIGINT NOT NULL,       -- ANTES: pregunta_id
+  opcion_num TINYINT NOT NULL,
+  porcentaje DECIMAL(6,4) NOT NULL,
+  respondido_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (id_intento_examen, id_pregunta),
+  CONSTRAINT fk_rd_intento
+    FOREIGN KEY (id_intento_examen) REFERENCES intentos_examen(id_intento_examen)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_rd_pregunta
+    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta)
+    ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_rd_intento ON resultados_detalle(id_intento_examen);
+
+-- ============================================================
+--  15) RESULTADO FINAL
+-- ============================================================
+CREATE TABLE resultados_resumen (
+  id_resultado_resumen BIGINT AUTO_INCREMENT PRIMARY KEY, -- ANTES: id
+  id_intento_examen BIGINT NOT NULL UNIQUE, -- ANTES: intento_id
+  puntaje_maximo INT NOT NULL,
+  puntaje_final DECIMAL(10,2) NOT NULL,
+  creado_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rr_intento
+    FOREIGN KEY (id_intento_examen) REFERENCES intentos_examen(id_intento_examen)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;

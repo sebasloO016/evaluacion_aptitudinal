@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso - Evaluación Aptitudinal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET & BASE --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            /* Evita scroll */
+            background-color: #f8fafc;
+        }
+
+        /* --- LAYOUT DIVIDIDO --- */
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Lado Izquierdo: Imagen y Branding */
+        .banner-side {
+            flex: 1.2;
+            /* Ocupa un poco más de la mitad */
+            background-image: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(37, 99, 235, 0.8)), url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px;
+            color: white;
+            position: relative;
+        }
+
+        .banner-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+
+        .banner-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* Decoración sutil */
+        .banner-side::before {
+            content: "";
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: 50px;
+            height: 5px;
+            background: #60a5fa;
+        }
+
+        /* Lado Derecho: Formulario */
+        .form-side {
+            flex: 1;
+            /* Ocupa el resto */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            padding: 40px;
+            position: relative;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        /* --- TIPOGRAFÍA Y TEXTOS --- */
+        .login-header {
+            margin-bottom: 30px;
+        }
+
+        .login-header h2 {
+            font-size: 2rem;
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        /* --- INPUTS MODERNOS --- */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            pointer-events: none;
+            /* Click atraviesa el icono */
+            transition: color 0.3s;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            /* Espacio para el icono */
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
+            color: #334155;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control:focus+.input-icon {
+            color: #3b82f6;
+        }
+
+        /* Cambia color icono al enfocar */
+
+        /* Toggle Password (Ojo) */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .toggle-password:hover {
+            color: #334155;
+        }
+
+        /* --- BOTÓN PRINCIPAL --- */
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* --- ALERTAS --- */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: fadeIn 0.5s;
+        }
+
+        .alert.error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert.success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+
+        /* --- FOOTER --- */
+        .footer-text {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* --- ANIMACIONES --- */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 900px) {
+            .banner-side {
+                display: none;
+            }
+
+            /* Ocultar imagen en móvil/tablet */
+            .form-side {
+                width: 100%;
+                background-image: radial-gradient(#eff6ff 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div class="login-wrapper">
+
+        <div class="banner-side">
+            <div class="banner-content">
+                <h1>Potencia<br>Tu Futuro.</h1>
+                <p>Bienvenido al Sistema de Evaluación Aptitudinal. <br>Demuestra tus habilidades y alcanza el siguiente
+                    nivel profesional.</p>
+            </div>
+        </div>
+
+
+        <div class="form-side">
+            <div class="login-card">
+
+                <div class="login-header">
+                    <h2>🔐 Iniciar Sesión</h2>
+                    <p>Ingresa tus credenciales para acceder al examen.</p>
+                </div>
+
+                <% if (typeof error_msg !=='undefined' && error_msg.length> 0) { %>
+                    <div class="alert error">
+                        <span>⚠️</span>
+                        <%= error_msg %>
+                    </div>
+                    <% } %>
+
+                        <% if (typeof success_msg !=='undefined' && success_msg.length> 0) { %>
+                            <div class="alert success">
+                                <span>✅</span>
+                                <%= success_msg %>
+                            </div>
+                            <% } %>
+
+                                <form action="/login" method="POST">
+
+                                    <div class="input-group">
+                                        <label for="cedula">Número de Cédula</label>
+                                        <div class="input-wrapper">
+                                            <div class="input-icon">👤</div>
+                                            <input type="text" id="cedula" name="cedula" class="form-control"
+                                                placeholder="Ej: 1805084280" autocomplete="off" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="input-group">
+                                        <label for="clave">Contraseña de Acceso</label>
+                                        <div class="input-wrapper">
+                                            <div class="input-icon">🔒</div>
+                                            <input type="password" id="clave" name="clave" class="form-control"
+                                                placeholder="••••••••" required>
+
+                                            <button type="button" class="toggle-password" onclick="togglePass()">
+                                                👁️
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn-login">
+                                        Acceder al Sistema →
+                                    </button>
+
+                                </form>
+
+                                <div class="footer-text">
+                                    &copy; <%= new Date().getFullYear() %> Sistema de Evaluación Corporativa<br>
+                                        <span style="opacity: 0.6; font-size: 0.75rem;">Acceso seguro y
+                                            encriptado</span>
+                                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="copyright-protection-layer"
+        style="text-align: bottom; padding: 20px; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 30px; background-color: #f1f5f9;">
+    </div>
+    <script src="/js/system-core-validator.js"></script>
+    <script>
+        function togglePass() {
+            const input = document.getElementById('clave');
+            const btn = document.querySelector('.toggle-password');
+            if (input.type === "password") {
+                input.type = "text";
+                btn.innerHTML = "🚫"; // Icono de ocultar
+            } else {
+                input.type = "password";
+                btn.innerHTML = "👁️"; // Icono de ver
+            }
+        }
+    </script>
+    <script>
+        (function () {
+            const _0x1a2b = "RGVzYXJyb2xsYWRvIHBvciA8c3Ryb25nPkVkaXNvbiBTZWJhc3RpYW4gR2F2aWxhbmVzIEzDs3Blejwvc3Ryb25nPiDCqQ==";
+            const _0x3c4d = "LiBUb2RvcyBsb3MgZGVyZWNob3MgcmVzZXJ2YWRvcy4=";
+
+            function checkIntegrity() {
+                const layer = document.getElementById('copyright-protection-layer');
+                const currentYear = new Date().getFullYear();
+                const decodedText = atob(_0x1a2b) + " " + currentYear + atob(_0x3c4d);
+
+                if (!layer) {
+                    document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;background:red;color:white;font-size:30px;text-align:center;">ERROR DE LICENCIA:<br>Se ha eliminado la etiqueta de derechos de autor.<br>Restaure el pie de página para continuar.</div>';
+                    return;
+                }
+                const style = window.getComputedStyle(layer);
+                if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                    layer.style.display = 'block';
+                    layer.style.visibility = 'visible';
+                    layer.style.opacity = '1';
+                }
+
+                if (layer.innerHTML.trim() === "") {
+                    layer.innerHTML = decodedText;
+                }
+            }
+
+            checkIntegrity();
+            setInterval(checkIntegrity, 2000);
+        })();
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Cargos</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- ESTILOS DEL LAYOUT PRINCIPAL (SIDEBAR) --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DE LA TABLA DE CARGOS --- */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-cargos {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        .table-cargos thead {
+            background-color: #f8fafc;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .table-cargos th {
+            padding: 16px;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table-cargos td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .table-cargos tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .table-cargos tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-neutral {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+
+        /* Botón Configurar */
+        .btn-config {
+            background-color: white;
+            color: #2563eb;
+            border: 1px solid #dbeafe;
+            padding: 8px 14px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-config:hover {
+            background-color: #eff6ff;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        /* Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            vertical-align: middle;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked+.slider {
+            background-color: #10b981;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        .status-label {
+            font-size: 0.85rem;
+            margin-left: 8px;
+            color: #64748b;
+            min-width: 60px;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid">
+
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+
+                <li><a href="/admin/cargos" class="active">💼 Gestión Cargos</a></li>
+
+                <li><a href="/admin/tipos">🏷️ Tipos y Opciones</a></li>
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+
+            <div class="card-container">
+                <div class="page-header">
+                    <div>
+                        <h1 style="margin:0; font-size:1.5rem; color:#1e293b;">💼 Gestión de Cargos</h1>
+                        <p style="margin:5px 0 0 0; color:#64748b; font-size:0.9rem;">
+                            Administra los perfiles, asigna competencias y activa los exámenes.
+                        </p>
+                    </div>
+                </div>
+
+                <% if(locals.success_msg && success_msg.length> 0) { %>
+                    <div class="alert success"
+                        style="margin-bottom: 20px; padding: 15px; background: #dcfce7; color: #166534; border-radius: 6px;">
+                        <%= success_msg %>
+                    </div>
+                    <% } %>
+
+                        <% if(locals.error_msg && error_msg.length> 0) { %>
+                            <div class="alert error"
+                                style="margin-bottom: 20px; padding: 15px; background: #fee2e2; color: #991b1b; border-radius: 6px;">
+                                <%= error_msg %>
+                            </div>
+                            <% } %>
+
+                                <div class="table-responsive">
+                                    <table class="table-cargos">
+                                        <thead>
+                                            <tr>
+                                                <th>Nombre del Cargo</th>
+                                                <th>Postulantes Registrados</th>
+                                                <th>Competencias Asignadas</th>
+                                                <th>Estado del Examen</th>
+                                                <th style="text-align: right;">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% cargos.forEach(c=> { %>
+                                                <tr>
+                                                    <td style="font-weight: 600; color:#1e293b;">
+                                                        <%= c.nombre %>
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="badge badge-neutral">
+                                                            👤 <%= c.total_postulantes %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td>
+                                                        <% if(c.total_competencias> 0) { %>
+                                                            <span class="badge badge-success">
+                                                                ✅ <%= c.total_competencias %> Config.
+                                                            </span>
+                                                            <% } else { %>
+                                                                <span class="badge badge-danger">
+                                                                    ⚠️ Sin configurar
+                                                                </span>
+                                                                <% } %>
+                                                    </td>
+
+                                                    <td style="display:flex; align-items:center;">
+                                                        <label class="switch">
+                                                            <input type="checkbox"
+                                                                onchange="toggleCargo(<%= c.id_cargo %>, this)"
+                                                                <%=c.activo_para_examen ? 'checked' : '' %>>
+                                                            <span class="slider"></span>
+                                                        </label>
+                                                        <span id="status-text-<%= c.id_cargo %>" class="status-label">
+                                                            <%= c.activo_para_examen ? 'Activo' : 'Inactivo' %>
+                                                        </span>
+                                                    </td>
+
+                                                    <td style="text-align: right;">
+                                                        <a href="/admin/cargos/configurar/<%= c.id_cargo %>"
+                                                            class="btn-config">
+                                                            ⚙️ Configurar
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+
+                                                    <% if (cargos.length===0) { %>
+                                                        <tr>
+                                                            <td colspan="5"
+                                                                style="text-align:center; padding:30px; color:#94a3b8;">
+                                                                No hay cargos registrados. Importa usuarios primero.
+                                                            </td>
+                                                        </tr>
+                                                        <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function toggleCargo(id, checkbox) {
+            const estado = checkbox.checked ? 1 : 0;
+            const label = document.getElementById('status-text-' + id);
+
+            // Feedback visual inmediato
+            label.innerText = "Guardando...";
+            label.style.opacity = "0.5";
+
+            try {
+                const res = await fetch('/admin/cargos/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_cargo: id, estado: estado })
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    label.innerText = estado ? "Activo" : "Inactivo";
+                    label.style.opacity = "1";
+                    label.style.color = estado ? "#10b981" : "#64748b"; // Verde si activo, gris si inactivo
+                } else {
+                    throw new Error("Error en servidor");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("❌ No se pudo cambiar el estado. Revise su conexión.");
+                checkbox.checked = !checkbox.checked; // Revertir switch
+                label.innerText = !estado ? "Activo" : "Inactivo";
+                label.style.opacity = "1";
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tipos de Pregunta</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES Y SIDEBAR --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f5f9;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+
+        .sidebar li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: #334155;
+            color: white;
+        }
+
+        .main-content {
+            padding: 40px;
+            background-color: #f8fafc;
+        }
+
+        /* --- ESTILOS ESPECÍFICOS DE TIPOS --- */
+        .card-new {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 5px solid #10b981;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .grid-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .type-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s;
+        }
+
+        .type-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-std {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .btn-save {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-edit {
+            display: block;
+            background-color: #f1f5f9;
+            color: #475569;
+            text-decoration: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-edit:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-grid">
+
+        <aside class="sidebar">
+            <h2>Admin Panel</h2>
+            <div style="font-size: 20px; opacity: 0.7;">
+                <% if (typeof user !=='undefined' && user.nombres) { %>
+                    Hola, <%= user.nombres %>
+                        <% } else { %>
+                            Administrador
+                            <% } %>
+            </div>
+
+            <ul>
+                <li><a href="/admin/dashboard">📊 Inicio</a></li>
+                <li><a href="/admin/importar">📥 Carga Masiva (Excel)</a></li>
+                <li><a href="/admin/cargos">💼 Gestión Cargos</a></li>
+
+                <li><a href="/admin/tipos" class="active">🏷️ Tipos y Opciones</a></li>
+
+                <li><a href="/admin/reportes">📈 Reportes</a></li>
+                <li><a href="/admin/parametros">⚙️ Config. Global</a></li>
+
+                <li style="margin-top: 50px;">
+                    <form action="/logout" method="POST">
+                        <button type="submit"
+                            style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; text-align:left; padding:10px;">
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div style="max-width: 1200px; margin: 0 auto;">
+
+                <h1 style="color:#1e293b; margin-top:0;">🏷️ Gestión de Tipos de Pregunta</h1>
+                <p style="color:#64748b; margin-bottom:30px;">Define las categorías de evaluación (ej: Psicométrico,
+                    Personalidad) y sus escalas de respuesta.</p>
+
+                <% if(locals.success_msg && success_msg.length> 0) { %>
+                    <div class="alert success"
+                        style="background:#dcfce7; color:#166534; padding:15px; border-radius:6px; margin-bottom:20px;">
+                        <%= success_msg %>
+                    </div>
+                    <% } %>
+
+                        <% if(locals.error_msg && error_msg.length> 0) { %>
+                            <div class="alert error"
+                                style="background:#fee2e2; color:#991b1b; padding:15px; border-radius:6px; margin-bottom:20px;">
+                                <%= error_msg %>
+                            </div>
+                            <% } %>
+
+                                <div class="card-new">
+                                    <h3 style="margin-top:0; color:#059669;">➕ Agregar Nuevo Tipo</h3>
+                                    <p style="font-size:14px; color:#64748b;">Crea una nueva categoría para agrupar
+                                        preguntas.</p>
+
+                                    <form action="/admin/tipos/crear" method="POST"
+                                        style="display:flex; gap:10px; margin-top:15px;">
+                                        <input type="text" name="nombre" class="input-std"
+                                            placeholder="Ej: Lógico Matemático..." required style="flex:1;">
+                                        <button type="submit" class="btn-save"
+                                            style="background:#10b981; padding:0 25px; font-weight:600;">Crear</button>
+                                    </form>
+                                </div>
+
+                                <div style="display:flex; align-items:center; margin-bottom:20px;">
+                                    <h3 style="color:#1e293b; margin:0;">📂 Tipos Existentes</h3>
+                                    <span
+                                        style="background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:10px; font-size:12px; margin-left:10px;">
+                                        <%= tipos.length %> Registrados
+                                    </span>
+                                </div>
+
+                                <div class="grid-types">
+                                    <% tipos.forEach(t=> { %>
+                                        <div class="type-card">
+                                            <form action="/admin/tipos/renombrar" method="POST">
+                                                <label
+                                                    style="font-size:12px; color:#64748b; font-weight:600; margin-bottom:5px; display:block;">
+                                                    NOMBRE DEL TIPO
+                                                </label>
+                                                <input type="hidden" name="id_tipo_pregunta"
+                                                    value="<%= t.id_tipo_pregunta %>">
+
+                                                <div style="display:flex; gap:8px;">
+                                                    <input type="text" name="nombre" value="<%= t.nombre %>" required
+                                                        class="input-std">
+                                                    <button type="submit" class="btn-save"
+                                                        title="Guardar Cambios">💾</button>
+                                                </div>
+                                            </form>
+
+                                            <a href="/admin/tipos/editar/<%= t.id_tipo_pregunta %>" class="btn-edit">
+                                                ✏️ Configurar Respuestas
+                                            </a>
+                                        </div>
+                                        <% }) %>
+                                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

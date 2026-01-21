@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Examen en Curso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            margin: 0;
+            padding-bottom: 100px;
+            /* Espacio para no tapar el footer */
+        }
+
+        /* Header Fijo con Progreso */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 20px;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-container {
+            flex: 1;
+            margin: 0 20px;
+            max-width: 600px;
+        }
+
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: #2563eb;
+            height: 100%;
+            width: 0%;
+            /* Se llenará con JS */
+            transition: width 0.5s ease;
+        }
+
+        /* Contenedor Principal */
+        .exam-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Tarjeta de Pregunta */
+        .qbox {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .qbox:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .qmeta {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .qtext {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            color: #0f172a;
+        }
+
+        /* Opciones de Respuesta */
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .option-label:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* Estilo cuando está seleccionado */
+        .option-input:checked+.option-content {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .option-label:has(.option-input:checked) {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            box-shadow: 0 0 0 1px #2563eb;
+        }
+
+        .option-input {
+            margin-right: 15px;
+            accent-color: #2563eb;
+            transform: scale(1.2);
+        }
+
+        /* Botón Enviar */
+        .btn-submit {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s;
+            display: block;
+            margin: 40px auto 0;
+            width: fit-content;
+        }
+
+        .btn-submit:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        /* Indicador de Estado (Toast) */
+        #status-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        }
+
+        #status-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Seguridad y Utiles */
+        .no-copy {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body class="no-copy">
+
+    <header class="sticky-header">
+        <div style="font-weight: 700; color: #1e293b;">Evaluación</div>
+
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <form action="/logout" method="POST" style="margin:0;">
+            <button type="submit"
+                style="background:none; border:none; color:#64748b; font-size:0.9rem; cursor:pointer; font-weight:600;">
+                Salir
+            </button>
+        </form>
+    </header>
+
+    <div class="exam-container">
+
+        <div id="questions-wrapper">
+            <% preguntas.forEach((p, idx)=> { %>
+                <div class="qbox qbox-item" id="qbox-<%= idx %>" data-id-pregunta="<%= p.id_pregunta %>"
+                    data-index="<%= idx %>">
+                    <div class="qmeta">
+                        <span>Pregunta <%= idx + 1 %> de <%= preguntas.length %></span>
+                        <span style="color:#2563eb;">
+                            <%= p.tipo_nombre %>
+                        </span>
+                    </div>
+
+                    <div class="qtext">
+                        <%= p.pregunta_texto %>
+                    </div>
+
+                    <% p.opciones.forEach((o)=> { %>
+                        <label class="option-label">
+                            <input type="radio" name="preg_<%= p.id_pregunta %>" value="<%= o.opcion_num %>"
+                                class="option-input" <% if (p.opcion_elegida==o.opcion_num) { %> checked <% } %>>
+                                <span class="option-content">
+                                    <%= o.opcion_texto %>
+                                </span>
+                        </label>
+                        <% }) %>
+                </div>
+                <% }) %>
+        </div>
+
+        <div id="pagination-controls"
+            style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 50px;">
+            <button type="button" id="btn-prev" onclick="changePage(-1)"
+                style="padding: 12px 25px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #334155; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                ⬅️ Anterior
+            </button>
+
+            <span id="page-indicator" style="align-self: center; color: #64748b; font-weight: 500;">
+                Página 1
+            </span>
+
+            <button type="button" id="btn-next" onclick="changePage(1)"
+                style="padding: 12px 25px; border-radius: 8px; background: #2563eb; color: white; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                Siguiente ➡️
+            </button>
+        </div>
+
+        <div id="finish-section" style="text-align: center; margin-top: 20px; display: none;">
+            <p style="color: #64748b; font-size: 0.9rem;">
+                <span
+                    style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:50%; margin-right:5px;"></span>
+                Autoguardado activado. Tus respuestas se sincronizan al instante.
+            </p>
+
+            <form action="/postulante/examen/enviar" method="POST" onsubmit="return validarTodo();">
+                <button type="submit" class="btn-submit">
+                    ✨ Finalizar Examen
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <div id="status-toast">
+        <span id="toast-icon">💾</span>
+        <span id="toast-msg">Guardando...</span>
+    </div>
+
+    <div id="copyright-protection-layer"
+        style="text-align: center; padding: 20px; font-size: 12px; color: #64748b; border-top: 1px solid #e2e8f0; margin-top: 30px; background-color: #f1f5f9;">
+        Sistema de Evaluación Seguro
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. CONFIGURACIÓN Y VARIABLES
+        // ==========================================
+        const PREGUNTAS_POR_PAGINA = 2; // <--- MODIFICAR AQUÍ SI ES NECESARIO PONER CANTIDAD DE PREGUNTAS POR PAGINA
+        const totalQuestions = <%= preguntas.length %>;
+        let examenEnviado = false; // Bandera para evitar alerta al enviar
+
+        // Variables para paginación
+        let currentPage = 1;
+        const allQuestions = document.querySelectorAll('.qbox-item');
+        const totalPages = Math.ceil(allQuestions.length / PREGUNTAS_POR_PAGINA);
+
+        // ==========================================
+        // 2. LÓGICA DE PAGINACIÓN
+        // ==========================================
+        function showPage(page) {
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentPage = page;
+
+            const start = (currentPage - 1) * PREGUNTAS_POR_PAGINA;
+            const end = start + PREGUNTAS_POR_PAGINA;
+
+            // Mostrar solo las preguntas del rango actual
+            allQuestions.forEach((q, index) => {
+                if (index >= start && index < end) {
+                    q.style.display = 'block';
+                } else {
+                    q.style.display = 'none';
+                }
+            });
+
+            // Actualizar botones
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const finishSection = document.getElementById('finish-section');
+            const pageIndicator = document.getElementById('page-indicator');
+
+            // Control botón Anterior
+            if (currentPage === 1) {
+                btnPrev.style.display = 'none';
+            } else {
+                btnPrev.style.display = 'flex';
+            }
+
+            // Control botón Siguiente y Finalizar
+            if (currentPage === totalPages) {
+                btnNext.style.display = 'none';
+                finishSection.style.display = 'block'; // Mostrar botón de enviar solo al final
+            } else {
+                btnNext.style.display = 'flex';
+                finishSection.style.display = 'none';
+            }
+
+            // Texto indicador
+            pageIndicator.innerText = `Página ${currentPage} de ${totalPages}`;
+
+            // Scroll suave hacia arriba
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function changePage(direction) {
+            showPage(currentPage + direction);
+        }
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            showPage(1);
+            updateProgress();
+        });
+
+        // ==========================================
+        // 3. BARRA DE PROGRESO
+        // ==========================================
+        function updateProgress() {
+            const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+            const percent = (answered / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = percent + '%';
+        }
+
+        // ==========================================
+        // 4. AUTOGUARDADO Y TOAST
+        // ==========================================
+        const toast = document.getElementById('status-toast');
+        const toastMsg = document.getElementById('toast-msg');
+        const toastIcon = document.getElementById('toast-icon');
+
+        function showToast(msg, icon, type) {
+            toastMsg.innerText = msg;
+            toastIcon.innerText = icon;
+            toast.className = 'show';
+
+            if (type === 'success') {
+                toast.style.background = '#10b981';
+                setTimeout(() => { toast.className = ''; }, 2000);
+            } else if (type === 'error') {
+                toast.style.background = '#ef4444';
+            } else {
+                toast.style.background = '#1e293b';
+            }
+        }
+
+        async function guardar(idPregunta, opcionNum) {
+            showToast("Guardando...", "cloud_upload", "loading");
+            try {
+                const res = await fetch('/postulante/examen/guardar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_pregunta: idPregunta, opcion_num: opcionNum })
+                });
+                if (res.ok) {
+                    showToast("Guardado", "check_circle", "success");
+                    updateProgress();
+                } else {
+                    throw new Error("Error server");
+                }
+            } catch (e) {
+                showToast("Error de conexión", "wifi_off", "error");
+            }
+        }
+
+        // Listener global para cambios en los radios
+        document.addEventListener('change', async (e) => {
+            if (e.target.matches('input[type="radio"]')) {
+                const input = e.target;
+                const box = input.closest('.qbox');
+                const idPregunta = Number(box.dataset.idPregunta);
+                const opcionNum = Number(input.value);
+                await guardar(idPregunta, opcionNum);
+            }
+        });
+
+        // ==========================================
+        // 5. VALIDACIÓN FINAL INTELIGENTE
+        // ==========================================
+        function validarTodo() {
+            const preguntas = document.querySelectorAll('.qbox-item');
+
+            for (let i = 0; i < preguntas.length; i++) {
+                const q = preguntas[i];
+                const checked = q.querySelector('input[type="radio"]:checked');
+
+                if (!checked) {
+                    // Calculamos en qué página está la pregunta faltante
+                    const targetPage = Math.floor(i / PREGUNTAS_POR_PAGINA) + 1;
+
+                    // Si no estamos en esa página, vamos allá automáticamente
+                    if (currentPage !== targetPage) {
+                        showPage(targetPage);
+                    }
+
+                    // Esperamos brevemente para resaltar el error
+                    setTimeout(() => {
+                        alert("⚠️ ¡Espera! Aún tienes preguntas sin responder en esta sección.");
+                        q.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        q.style.borderColor = "#ef4444";
+                        q.style.transform = "scale(1.02)";
+                        setTimeout(() => {
+                            q.style.borderColor = "#e2e8f0";
+                            q.style.transform = "scale(1)";
+                        }, 2000);
+                    }, 100);
+
+                    return false; // Bloquea el envío
+                }
+            }
+
+            // Si todo está ok, pedimos confirmación
+            const confirma = confirm("¿Confirmas que deseas finalizar tu examen?");
+            if (confirma) {
+                examenEnviado = true; // ACTIVAMOS LA BANDERA PARA QUE NO SALTE LA ALERTA DE PESTAÑA
+            }
+            return confirma;
+        }
+
+        // ==========================================
+        // 6. SEGURIDAD Y ANTI-TRAMPA
+        // ==========================================
+
+        // Bloquear click derecho
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Bloquear atajos de teclado (Copiar, Pegar, Inspeccionar)
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'p')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+            if (e.keyCode === 44) { // Impr Pant
+                e.preventDefault();
+                alert("🚫 Las capturas de pantalla están deshabilitadas.");
+                return false;
+            }
+        });
+
+        // Detección de cambio de pestaña (VISIBILITY API)
+        document.addEventListener('visibilitychange', function () {
+            // SI YA ENVIÓ EL EXAMEN, IGNORAMOS ESTO
+            if (examenEnviado) return;
+
+            if (document.visibilityState !== 'visible') {
+                alert("⚠️ ¡Atención! No debes cambiar de pestaña durante el examen, esto será reportado ademas te quedan 2 intentos. No puedes repetir el examen.");
+            }
+        });
+
+        // Bloquear arrastre
+        document.addEventListener('dragstart', function (e) { e.preventDefault(); return false; });
+
+        // Bloquear impresión (ocultando contenido)
+        window.onbeforeprint = function () { document.body.style.display = "none"; };
+        window.onafterprint = function () { document.body.style.display = "block"; };
+
+    </script>
+</body>
+
+</html>
