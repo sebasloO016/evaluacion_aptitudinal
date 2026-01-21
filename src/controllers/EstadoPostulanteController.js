@@ -24,6 +24,7 @@ class EstadoPostulanteController {
             let estadoUI = "INICIAR";
             let mensaje = "✅ Su examen está listo para iniciar.";
             let puntaje = null; // Variable para la nota
+            let puntajeTotal = 100;
 
             // 1) Si no tiene cargo asignado, no puede dar examen
             if (!data.id_cargo) {
