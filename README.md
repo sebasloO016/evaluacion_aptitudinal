@@ -1,0 +1,1 @@
+Desarrollo de una app web con EJS, node.js, html y css para una evaluación apitudinal, permite conexion simultanea de 100 usuario (según tu servidor) para rendir el examne, el adminstrador tiene una interfaz en donde puede parametrizar, cargar masivamente usuarios y preguntas, asignar pormedios etc.
